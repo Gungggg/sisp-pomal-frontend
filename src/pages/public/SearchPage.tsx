@@ -5,15 +5,21 @@ import dayjs from "dayjs"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Card } from "@/components/ui/Card"
-import { sanksiApi } from "@/services/api"
+import { sanksiApi, blacklistApi } from "@/services/api"
 
 export default function SearchPage() {
   const [searchInput, setSearchInput] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
 
-  const { data: sanksiList, isLoading, isError, isFetched } = useQuery({
+  const { data: sanksiList, isLoading: isSanksiLoading, isError: isSanksiError, isFetched: isSanksiFetched } = useQuery({
     queryKey: ["sanksi", searchQuery],
     queryFn: () => sanksiApi.searchByUsername(searchQuery),
+    enabled: !!searchQuery,
+  })
+
+  const { data: blacklist, isLoading: isBlacklistLoading, isError: isBlacklistError, isFetched: isBlacklistFetched } = useQuery({
+    queryKey: ["blacklist", searchQuery],
+    queryFn: () => blacklistApi.searchByUsername(searchQuery),
     enabled: !!searchQuery,
   })
 
@@ -23,6 +29,10 @@ export default function SearchPage() {
       setSearchQuery(searchInput.trim())
     }
   }
+
+  const isLoading = isSanksiLoading || isBlacklistLoading
+  const isError = isSanksiError || isBlacklistError
+  const isFetched = isSanksiFetched && isBlacklistFetched
 
   return (
     <div className="flex flex-col">
@@ -65,21 +75,50 @@ export default function SearchPage() {
             </div>
           )}
 
-          {isFetched && !isLoading && (!sanksiList || sanksiList.length === 0) && (
+          {isFetched && !isLoading && (!sanksiList || sanksiList.length === 0) && (!blacklist || blacklist.length === 0) && (
             <Card className="text-center py-12">
               <h2 className="text-[24px] font-bold text-[var(--color-ink)] mb-2">Tidak Ditemukan</h2>
               <p className="text-[var(--color-body)] font-light">
-                Tidak ada riwayat sanksi untuk username <span className="font-bold">"{searchQuery}"</span>.
+                Tidak ada riwayat sanksi atau blacklist untuk username <span className="font-bold">"{searchQuery}"</span>.
               </p>
             </Card>
           )}
 
-          {isFetched && !isLoading && sanksiList && sanksiList.length > 0 && (
+          {isFetched && !isLoading && ((sanksiList && sanksiList.length > 0) || (blacklist && blacklist.length > 0)) && (
             <div className="space-y-6">
               <h2 className="text-[32px] font-bold text-[var(--color-ink)] leading-[1.15]">Hasil Pencarian</h2>
               
               <div className="space-y-6">
-                {sanksiList.map((sanksi) => {
+                {/* Blacklist Section */}
+                {blacklist && blacklist.length > 0 && (
+                  <div className="mb-8">
+                    {blacklist.map((bl) => (
+                      <Card key={bl.id} className="border-[var(--color-error)] bg-[#fff5f5]">
+                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                          <div className="space-y-2">
+                            <div className="inline-block px-3 py-1 bg-[var(--color-error)] text-white font-bold text-[14px] uppercase tracking-wider mb-2">
+                              TERDAFTAR DI BLACKLIST
+                            </div>
+                            <h3 className="text-[28px] font-bold text-[var(--color-ink)]">{bl.username_roblox}</h3>
+                            <div>
+                              <p className="text-[13px] font-bold tracking-[1.5px] uppercase text-[var(--color-muted)] mb-1">Alasan</p>
+                              <p className="text-[16px] text-[var(--color-ink)] font-medium">{bl.alasan}</p>
+                            </div>
+                          </div>
+                          <div className="p-4 bg-white border border-[var(--color-error)] border-opacity-30 rounded text-center w-full md:w-auto">
+                            <p className="text-[14px] font-bold text-[var(--color-error)] mb-1 uppercase tracking-wider">Status</p>
+                            <p className="text-[24px] font-black text-[var(--color-error)] leading-none">BANNED PERMANEN</p>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+                {/* Sanksi Section */}
+                {sanksiList && sanksiList.length > 0 && (
+                  <div className="space-y-6">
+                    {sanksiList.map((sanksi) => {
                   const now = dayjs()
                   const end = dayjs(sanksi.tanggal_selesai)
                   const diff = end.diff(now, 'day')
@@ -128,6 +167,8 @@ export default function SearchPage() {
                     </Card>
                   )
                 })}
+                  </div>
+                )}
               </div>
             </div>
           )}

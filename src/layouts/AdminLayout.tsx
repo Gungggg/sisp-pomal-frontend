@@ -45,6 +45,9 @@ export default function AdminLayout() {
               <Link to="/admin/dashboard" className={`text-[14px] font-normal tracking-[0.3px] transition-colors ${window.location.pathname === '/admin/dashboard' ? 'text-white' : 'text-[var(--color-on-dark-soft)] hover:text-white'}`}>
                 Manajemen Sanksi
               </Link>
+              <Link to="/admin/blacklist" className={`text-[14px] font-normal tracking-[0.3px] transition-colors ${window.location.pathname === '/admin/blacklist' ? 'text-white' : 'text-[var(--color-on-dark-soft)] hover:text-white'}`}>
+                Manajemen Blacklist
+              </Link>
               {isSuperadmin && (
                 <Link to="/admin/users" className={`text-[14px] font-normal tracking-[0.3px] transition-colors ${window.location.pathname === '/admin/users' ? 'text-white' : 'text-[var(--color-on-dark-soft)] hover:text-white'}`}>
                   Kelola Admin

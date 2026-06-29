@@ -5,6 +5,7 @@ import SearchPage from "./pages/public/SearchPage"
 import LoginPage from "./pages/admin/LoginPage"
 import DashboardPage from "./pages/admin/DashboardPage"
 import UserManagementPage from "./pages/admin/UserManagementPage"
+import BlacklistManagementPage from "./pages/admin/BlacklistManagementPage"
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="blacklist" element={<BlacklistManagementPage />} />
           <Route path="users" element={<UserManagementPage />} />
         </Route>
       </Routes>

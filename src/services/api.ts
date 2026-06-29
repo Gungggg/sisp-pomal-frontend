@@ -211,3 +211,69 @@ export const sanksiApi = {
     return true
   }
 }
+
+export interface BlacklistRecord {
+  id: number
+  username_roblox: string
+  alasan: string
+  created_at: string
+}
+
+export const blacklistApi = {
+  searchByUsername: async (username: string): Promise<BlacklistRecord[]> => {
+    const { data, error } = await supabase
+      .from('blacklist_puspomal')
+      .select('*')
+      .ilike('username_roblox', username)
+      .order('id', { ascending: false })
+      
+    if (error) {
+      console.error(error)
+      return []
+    }
+    
+    return (data || []) as BlacklistRecord[]
+  },
+
+  getAll: async (): Promise<BlacklistRecord[]> => {
+    const { data, error } = await supabase
+      .from('blacklist_puspomal')
+      .select('*')
+      .order('id', { ascending: false })
+      
+    if (error) throw new Error(error.message)
+    return (data as BlacklistRecord[]) || []
+  },
+
+  addBlacklist: async (payload: Omit<BlacklistRecord, "id" | "created_at">): Promise<BlacklistRecord> => {
+    const { data, error } = await supabase
+      .from('blacklist_puspomal')
+      .insert([payload])
+      .select()
+      .single()
+
+    if (error) throw new Error(error.message)
+    return data as BlacklistRecord
+  },
+
+  updateBlacklist: async (id: number, payload: Partial<Omit<BlacklistRecord, "id" | "created_at">>) => {
+    const { data, error } = await supabase
+      .from('blacklist_puspomal')
+      .update(payload)
+      .eq('id', id)
+      .select()
+      .single()
+      
+    if (error) throw new Error(error.message)
+    return data as BlacklistRecord
+  },
+
+  deleteBlacklist: async (id: number) => {
+    const { error } = await supabase
+      .from('blacklist_puspomal')
+      .delete()
+      .eq('id', id)
+    if (error) throw new Error(error.message)
+    return true
+  }
+}
